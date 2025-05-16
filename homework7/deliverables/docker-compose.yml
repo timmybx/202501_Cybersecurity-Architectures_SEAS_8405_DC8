@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    environment:
+      - APP_PASSWORD=${APP_PASSWORD}
+    ports:
+      - "127.0.0.1:15000:5000" #Expose port 5000 from inside the container as port 15000 on localhost of the host machine — but only accessible from the host itself.
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+        - ALL      # Drops all Linux capabilities unless explicitly needed
+    cap_add:
+        - NET_RAW  # Required for ping
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+          pids: 100  # Only supported in Swarm mode
