@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify
 import os
-import subprocess
-import ast
-import re
 from asteval import Interpreter
 import ipaddress
+from ping3 import ping
 
 app = Flask(__name__)
 
@@ -21,26 +19,37 @@ def hello():
         return jsonify({"error": "Invalid name: only alphanumeric characters allowed."}), 400
     return f"Hello, {name}!"
 
-def is_valid_ip(ip_str: str) -> bool:
+# Validate IP address (IPv4 or IPv6)
+def is_valid_ip(ip):
     try:
-        ipaddress.ip_address(ip_str)
+        ipaddress.ip_address(ip)
         return True
     except ValueError:
         return False
-    
-# Secure: Validate IP input to avoid command injection
-# Sample URL http://127.0.0.1:15000/ping?ip=127.0.0.3
-@app.route('/ping')
-def ping():
-    ip = request.args.get('ip')
-    if not ip or (is_valid_ip(ip) == False):
-        return jsonify({"error": "Invalid IP address."}), 400
-    try:
-        result = subprocess.check_output(['ping', '-c', '1', ip], text=True)
-        return jsonify({"output": result})
-    except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"Ping failed: {str(e)}"}), 500
 
+#http://127.0.0.1:15000/ping?ip=127.0.0.3 sample url
+@app.route('/ping')
+def ping_host():
+    ip = request.args.get('ip')
+    print(f"Received ping request for: {ip}")
+
+    if not ip:
+        return jsonify({"error": "Missing IP address"}), 400
+
+    try:
+        ipaddress.ip_address(ip)
+    except ValueError:
+        return jsonify({"error": "Invalid IP address"}), 400
+
+    try:
+        result = ping(ip, timeout=1)
+        if result is None:
+            return jsonify({"status": "No response"}), 408
+        return jsonify({"ip": ip, "response_time_ms": round(result * 1000, 2)})
+    except Exception as e:
+        print(f"Ping error: {e}")
+        return jsonify({"error": str(e)}), 500
+        
 # Secure: Replace eval() with literal_eval and validate input
 # Sample URL: http://127.0.0.1:15000/calculate?expr=100-60
 @app.route('/calculate')
@@ -56,5 +65,9 @@ def calculate():
     except (ValueError, SyntaxError):
         return jsonify({"error": "Invalid expression."}), 400
 
+@app.route('/health')
+def health():
+    return "OK", 200
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000) # nosec B104

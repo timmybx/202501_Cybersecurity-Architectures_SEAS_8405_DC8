@@ -1,11 +1,9 @@
 # Pre-build security checks
 check:
 	@echo "Running code analysis with Bandit..."
-#	docker run --rm -v $(PWD):/app python:3.9-alpine sh -c "pip install bandit && bandit -r /app"
-    docker run --rm -v $(PWD)/app python:3.9-alpine sh -c "pip install bandit && bandit -r /app"
+	docker run --rm -v $(PWD):/app python:3.9-alpine sh -c "pip install bandit && bandit -r /app"
 	@echo "Running dependency check with pip-audit..."
-#	docker run --rm -v $(PWD):/app python:3.9-alpine sh -c "pip install pip-audit && pip-audit -r /app/requirements.txt"
-	docker run --rm -v $(PWD)/app python:3.9-alpine sh -c "pip install pip-audit && pip-audit -r /app/requirements.txt"
+	docker run --rm -v $(PWD):/app python:3.9-alpine sh -c "pip install pip-audit && pip-audit -r /app/requirements.txt"
 
 # Host security check
 host-security:
@@ -21,7 +19,7 @@ run:
 	docker run -p 6000:5000 mywebapp
 
 # Scan the built image for vulnerabilities
-scan:
+scan: dbuild
 	docker scout recommendations mywebapp:latest
 
 # Docker Compose commands

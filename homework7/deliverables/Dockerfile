@@ -1,6 +1,9 @@
 # Use a minimal official Python image
 FROM python:3.13.3-alpine
 
+# Update pip
+RUN python -m pip install --upgrade pip
+
 # Set working directory
 WORKDIR /app
 
@@ -21,8 +24,8 @@ COPY app.py .
 EXPOSE 5000
 
 # Add health check 
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:5000/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5000/health || exit 1
 
 # Run the app
 CMD ["python", "app.py"]
