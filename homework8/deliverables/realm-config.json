@@ -1,0 +1,30 @@
+
+{
+  "id": "Homework8",
+  "realm": "demo-realm",
+  "enabled": true,
+  "clients": [{
+    "clientId": "flask-client",
+    "secret": "secret",
+    "enabled": true,
+    "redirectUris": ["*"],
+    "publicClient": false,
+    "protocol": "openid-connect",
+    "directAccessGrantsEnabled": true
+  }],
+  "users": [{
+  "username": "testuser",
+  "enabled": true,
+  "email": "tebrennan@gwu.edu",
+  "emailVerified": true,
+  "firstName": "Timothy",
+  "lastName": "Brennan",
+  "requiredActions": [],
+  "credentials": [{
+    "type": "password",
+    "value": "testpass",
+    "temporary": false
+  }]
+}]
+
+}
