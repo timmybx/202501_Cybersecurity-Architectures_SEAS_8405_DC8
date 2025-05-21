@@ -4,11 +4,11 @@ set -x
 source .env
 
 echo "Calling /public..."
-curl -i http://localhost:5000/public
+curl -i http://localhost:15000/public
 echo
 
 echo "Calling /protected (without token)..."
-curl -i http://localhost:5000/protected
+curl -i http://localhost:15000/protected
 echo
 
 echo "Calling /protected (with token)..."
@@ -22,6 +22,6 @@ export USER_TOKEN=$(curl -s http://localhost:8080/realms/$KEYCLOAK_REALM/protoco
 
 #echo $USER_TOKEN
 
-REALM_EXISTS=$(curl -s -H "Authorization: Bearer $USER_TOKEN" http://localhost:5000/protected | jq -r .[] )
+REALM_EXISTS=$(curl -s -H "Authorization: Bearer $USER_TOKEN" http://localhost:15000/protected | jq -r .[] )
 
 echo $REALM_EXISTS

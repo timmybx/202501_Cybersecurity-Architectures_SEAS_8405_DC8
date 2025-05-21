@@ -27,12 +27,13 @@ services:
       timeout: 10s
       retries: 15
       start_period: 90s
+    networks:
+      - internal
+
 
   flaskapp:
     build: ./flaskapp
     env_file: .env
-    ports:
-      - "5000:5000"
     environment:
       - KEYCLOAK_URL
       - KEYCLOAK_REALM
@@ -62,6 +63,42 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
 
+  waf:
+    image: owasp/modsecurity-crs:nginx
+    ports:
+      - "15000:80"
+    volumes:
+      - ./my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf
+    depends_on:
+      - flaskapp
+    command: ["nginx", "-g", "daemon off;"]
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    tmpfs:
+      - /tmp
+    security_opt:
+      - label=type:container_t
+      - no-new-privileges:true
+    cpu_quota: 50000
+    cpu_period: 100000
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+          pids: 100
+    networks:
+      - dmz
+      - internal
+       
 volumes:
   keycloak-data:
+
+networks:
+  dmz:
+  internal:
+    internal: true
