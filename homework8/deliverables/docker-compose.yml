@@ -28,9 +28,9 @@ services:
       retries: 15
       start_period: 90s
     networks:
+      - dmz
       - internal
-
-
+      
   flaskapp:
     build: ./flaskapp
     env_file: .env
