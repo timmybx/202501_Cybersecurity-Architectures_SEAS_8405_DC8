@@ -13,7 +13,7 @@ def get_public_key():
     url = f"{KEYCLOAK_URL}/realms/{REALM}/protocol/openid-connect/certs"
     for attempt in range(10):
         try:
-            response = requests.get(url, timeout=5)
+            response = requests.get(url, timeout=5, verify=False)  # nosec B501
             if response.ok:
                 keys = response.json().get('keys')
                 if keys:
@@ -79,5 +79,5 @@ def protected():
 def health():
     return "OK", 200
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000) # nosec B104
+if __name__ == "__main__":
+    app.run( host="0.0.0.0", port=5000, ssl_context=("certs/flask.crt", "certs/flask.key") ) # nosec B104

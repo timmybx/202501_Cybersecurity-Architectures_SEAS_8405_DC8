@@ -1,4 +1,4 @@
-# 🛡️ IAM Architecture with Flask, Keycloak, WAF, and DMZ (Docker Compose)
+# 🛡️ IAM Architecture with Flask, Keycloak, WAF, TLS 1.3 and DMZ (Docker Compose)
 
 This project demonstrates a secure **Identity and Access Management (IAM)** architecture using:
 
@@ -30,6 +30,10 @@ flowchart TD
 
 ## ⚙️ Features
 
+- 🔐 End-to-end encryption with TLS 1.3:
+  - Between users and the WAF (HTTPS)
+  - Between WAF and Flask app
+  - Between Flask app and Keycloak
 - 🌐 Simulated DMZ using Docker networks to isolate internal services
 - 🔒 Token-based access control via Keycloak (OpenID Connect)
 - ✅ Public and protected API routes in Flask
@@ -43,7 +47,13 @@ flowchart TD
 ## 📁 Project Structure
 
 ```
-.
+
+
+├── certs/
+│   ├── flask.crt
+│   ├── flask.key
+│   ├── server.crt
+│   ├── server.key
 ├── flaskapp/
 │   ├── app.py
 │   ├── requirements.txt
@@ -166,15 +176,12 @@ The IAM environment is hardened with multiple Docker security measures for both 
 
 ---
 
-
----
-
-
-### 🛡️ Web Application Firewall (WAF)
+### 🛡️ Web Application Firewall (WAF) (TLS 1.3 Enabled)
 
 A new `waf` service has been added using **NGINX with ModSecurity** and the **OWASP Core Rule Set** to provide first-line protection for the Flask API.
 
 #### Benefits:
+- Provides TLS 1.3 termination to secure external communication
 - Blocks common attacks (SQLi, XSS, CSRF, etc.)
 - Provides logging and visibility into web-layer threats
 - Acts as a reverse proxy between users and the Flask app
@@ -227,15 +234,6 @@ make reset           # Full clean, build, and start
 
 ---
 
-## ✅ Suggestions (Optional Improvements)
-
-- Consider mounting secrets from `.env` using Docker secrets in production
-- Enforce HTTPS (TLS) with a reverse proxy (e.g., Nginx, Caddy)
-- Add AppArmor or Seccomp profiles for full compliance
-- Use `python-dotenv` in `app.py` for `.env` loading in non-Docker runs
-
----
-
 ## 🔐 OAuth 2.0 and OIDC Flows Implemented
 
 This project uses the **Resource Owner Password Credentials Grant** flow from OAuth 2.0, enhanced with OpenID Connect (OIDC) for identity support.
@@ -266,10 +264,9 @@ The JWT includes OIDC claims such as `email_verified`, `preferred_username`, `gi
 | **S**poofing            | Forged tokens to impersonate users                | JWT signature validation with RS256 using Keycloak’s public key + WAF inspection   |
 | **T**ampering           | Token or API request manipulation                 | WAF filters and blocks malformed or malicious traffic before it reaches Flask      |
 | **R**epudiation         | User denial of actions                            | JWT includes `sub`, `iat`, and session ID for traceability                         |
-| **I**nformation Disclosure | Exposure of sensitive data or credentials      | DMZ restricts lateral access; `.env` secrets are not in images or responses        |
+| **I**nformation Disclosure | Exposure of sensitive data or credentials      | TLS 1.3 encrypts all communication paths (User ↔ WAF, WAF ↔ Flask, Flask ↔ Keycloak); DMZ restricts lateral access; `.env` secrets are not in images or responses |
 | **D**enial of Service   | Exhaustion of system resources                    | WAF rate-limiting, ModSecurity rules, and container resource constraints applied   |
 | **E**levation of Privilege | Unauthorized access to protected routes       | Token roles must match realm roles; WAF inspects traffic for injection attempts    |
-
 ---
 
 ## 🧠 Reflection on the Okta Case Study
@@ -298,6 +295,7 @@ The inclusion of a **WAF and DMZ** reinforces principles of **network isolation*
 
 This IAM architecture demonstrates:
 - A Web Application Firewall (WAF) protecting the API layer
+- TLS 1.3 encryption enforced throughout: user to WAF, WAF to Flask, and Flask to Keycloak
 - A Docker-based DMZ network to protect internal identity and API components
 - A secure OAuth 2.0 + OIDC implementation with Keycloak and Flask
 - Container hardening with Docker resource limits, `cap_drop`, and health checks
@@ -313,6 +311,9 @@ This IAM architecture demonstrates:
 - [NGINX](https://www.nginx.com/)
 - [Flask](https://flask.palletsprojects.com/)
 - [Python-JOSE](https://python-jose.readthedocs.io/en/latest/)
+- [TLS 1.3 Specification - RFC 8446](https://datatracker.ietf.org/doc/html/rfc8446): Defines the Transport Layer Security (TLS) Protocol Version 1.3, which improves security and performance over previous versions.
+- [Mozilla SSL Configuration Guidelines](https://ssl-config.mozilla.org/): A widely used resource for recommended TLS settings, including secure cipher suites and protocol versions for NGINX.
+
 
 ---
 

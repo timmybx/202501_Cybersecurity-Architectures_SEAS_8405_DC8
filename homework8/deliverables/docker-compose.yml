@@ -21,6 +21,8 @@ services:
       - "8080:8080"
     volumes:
       - keycloak-data:/opt/keycloak/data
+      - ./certs/server.crt:/etc/nginx/conf/server.crt:ro
+      - ./certs/server.key:/etc/nginx/conf/server.key:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/realms/demo-realm"]
       interval: 10s
@@ -65,11 +67,13 @@ services:
       retries: 5
     networks:
       - internal
+    volumes:
+      - ./certs:/app/certs:ro
 
   waf:
     image: owasp/modsecurity-crs:nginx
     ports:
-      - "15000:80"
+      - "15000:443"
     volumes:
       - ./my_proxy.conf:/etc/nginx/conf.d/my_proxy.conf
     depends_on:
@@ -97,8 +101,9 @@ services:
        
 volumes:
   keycloak-data:
-
+  
 networks:
   dmz:
   internal:
     internal: true
+
