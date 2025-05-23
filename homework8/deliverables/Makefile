@@ -1,5 +1,3 @@
-export $(shell sed 's/=.*//' .env)
-
 PYTHON_IMAGE=python:3.13.3-alpine
 APP_NAME=flaskapp
 
