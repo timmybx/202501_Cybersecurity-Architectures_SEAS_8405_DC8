@@ -267,6 +267,20 @@ The JWT includes OIDC claims such as `email_verified`, `preferred_username`, `gi
 | **I**nformation Disclosure | Exposure of sensitive data or credentials      | TLS 1.3 encrypts all communication paths (User ↔ WAF, WAF ↔ Flask, Flask ↔ Keycloak); DMZ restricts lateral access; `.env` secrets are not in images or responses |
 | **D**enial of Service   | Exhaustion of system resources                    | WAF rate-limiting, ModSecurity rules, and container resource constraints applied   |
 | **E**levation of Privilege | Unauthorized access to protected routes       | Token roles must match realm roles; WAF inspects traffic for injection attempts    |
+
+---
+## 🛡️ Security Compliance Mapping (OWASP ASVS + NIST 800-53)
+
+| Feature                                                        | OWASP ASVS Control                     | NIST 800-53 Control                                       |
+|----------------------------------------------------------------|----------------------------------------|------------------------------------------------------------|
+| TLS 1.3 encryption (User ↔ WAF, WAF ↔ Flask, Flask ↔ Keycloak) | V9.1 - Communication Security          | SC-12 Key Establishment, SC-13 Cryptographic Protection, SC-23 Session Authenticity |
+| JWT authentication with Keycloak                               | V2.1 - Authentication Design           | IA-2 Identification and Authentication, IA-5 Authenticator Management |
+| Web Application Firewall (WAF)                                 | V7 - Error Handling and Logging        | SI-10 Information Input Validation, SI-4 System Monitoring |
+| Rate limiting and request size limits in NGINX                 | V1.2 - HTTP Security Headers           | SC-5 Denial of Service Protection, AC-10 Concurrent Session Control |
+| Container hardening with no-new-privileges, cap_drop, read-only FS | V1.5 - Secure Deployment           | CM-2 Baseline Configuration, CM-6 Configuration Settings, SC-30 Concealment |
+| DMZ network isolation with Docker networks                     | V1.1 - Architecture                    | SC-7 Boundary Protection, AC-4 Information Flow Enforcement |
+| Token verification with RS256 and public key                   | V3.2 - Session Management              | IA-7 Cryptographic Module Authentication, SC-12 Key Establishment |
+
 ---
 
 ## 🧠 Reflection on the Okta Case Study
